@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器 - 专业版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .calculator {
+            background: #2d2d2d;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .test-panel {
+            background: #2d2d2d;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: #1a1a1a;
+            border-radius: 5px;
+            padding: 2px;
+        }
+
+        .mode-btn {
+            padding: 5px 15px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #0078d4;
+            color: #fff;
+        }
+
+        .display-container {
+            background: #000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-indicator {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: #999;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .memory-indicator.active {
+            opacity: 1;
+        }
+
+        .expression {
+            color: #666;
+            font-size: 14px;
+            min-height: 20px;
+            text-align: right;
+            margin-bottom: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .display {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 36px;
+            text-align: right;
+            width: 100%;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .buttons {
+            display: grid;
+            gap: 10px;
+        }
+
+        .button-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+		
+        .btn {
+            background: #3d3d3d;
+            border: none;
+            color: #fff;
+            height: 50px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: #4d4d4d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn.function {
+            background: #1a1a1a;
+            font-size: 14px;
+        }
+
+        .btn.function:hover {
+            background: #2a2a2a;
+        }
+
+        .btn.operator {
+            background: #0078d4;
+        }
+
+        .btn.operator:hover {
+            background: #1084d8;
+        }
+
+        .btn.number {
+            background: #4d4d4d;
+        }
+
+        .btn.number:hover {
+            background: #5d5d5d;
+        }
+
+        .btn.equals {
+            background: #ff9500;
+            grid-column: 4 / 7;
+        }
+
+        .btn.equals:hover {
+            background: #ffa500;
+        }
+
+        .btn.zero {
+            grid-column: span 2;
+        }
+
+        .btn.memory {
+            background: #6b6b6b;
+            font-size: 12px;
+        }
+
+        .btn.memory:hover {
+            background: #7b7b7b;
+        }
+
+        .btn.clear {
+            background: #c45850;
+        }
+
+        .btn.clear:hover {
+            background: #d46860;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .test-case {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .test-case:hover {
+            background: #2a2a2a;
+            transform: translateX(5px);
+        }
+
+        .test-case.passed {
+            border-left: 3px solid #4caf50;
+        }
+
+        .test-case.failed {
+            border-left: 3px solid #f44336;
+        }
+
+        .test-case.running {
+            border-left: 3px solid #ff9800;
+        }
+
+        .test-expression {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .test-result {
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #444;
+        }
+
+        .test-status.passed {
+            background: #4caf50;
+        }
+
+        .test-status.failed {
+            background: #f44336;
+        }
+
+        .run-tests-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .run-tests-btn:hover {
+            background: #1084d8;
+            transform: translateY(-2px);
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .test-panel {
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+            }
+
+            .button-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .btn {
+                font-size: 14px;
+                height: 45px;
+            }
+
+            .display {
+                font-size: 28px;
+            }
+
+            .button-row:first-child .btn:nth-child(n+5),
+            .button-row:nth-child(2) .btn:nth-child(n+5),
+            .button-row:nth-child(3) .btn:nth-child(n+5) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="calculator">
+            <div class="header">
+                <div class="title">科学计算器</div>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="deg">DEG</button>
+                    <button class="mode-btn" data-mode="rad">RAD</button>
+                </div>
+            </div>
+
+            <div class="display-container">
+                <div class="memory-indicator">M</div>
+                <div class="expression" id="expression"></div>
+                <input type="text" class="display" id="display" value="0" readonly>
+            </div>
+
+            <div class="buttons">
+                <div class="button-row">
+                    <button class="btn memory" data-action="mc">MC</button>
+                    <button class="btn memory" data-action="mr">MR</button>
+                    <button class="btn memory" data-action="mplus">M+</button>
+                    <button class="btn memory" data-action="mminus">M-</button>
+                    <button class="btn memory" data-action="ms">MS</button>
+                    <button class="btn function" data-action="factorial">n!</button>
+                </div>
+                
+                <div class="button-row">
+                    <button class="btn function" data-action="second" data-func="sin">sin</button>
+                    <button class="btn function" data-action="second" data-func="cos">cos</button>
+                    <button class="btn function" data-action="second" data-func="tan">tan</button>
+                    <button class="btn function" data-action="second" data-func="ln">ln</button>
+                    <button class="btn function" data-action="second" data-func="log">log</button>
+                    <button class="btn function" data-action="reciprocal">1/x</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="square">x²</button>
+                    <button class="btn function" data-action="cube">x³</button>
+                    <button class="btn function" data-action="power">xʸ</button>
+                    <button class="btn function" data-action="root">√</button>
+                    <button class="btn function" data-action="cuberoot">∛</button>
+                    <button class="btn function" data-action="percent">%</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="pi">π</button>
+                    <button class="btn function" data-action="e">e</button>
+                    <button class="btn clear" data-action="ce">CE</button>
+                    <button class="btn clear" data-action="c">C</button>
+                    <button class="btn operator" data-action="backspace">⌫</button>
+                    <button class="btn operator" data-action="negate">±</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="lparen">(</button>
+                    <button class="btn function" data-action="rparen">)</button>
+                    <button class="btn number" data-number="7">7</button>
+                    <button class="btn number" data-number="8">8</button>
+                    <button class="btn number" data-number="9">9</button>
+                    <button class="btn operator" data-action="divide">÷</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="sinh">sin</button>
+                    <button class="btn function" data-action="cosh">cos</button>
+                    <button class="btn number" data-number="4">4</button>
+                    <button class="btn number" data-number="5">5</button>
+                    <button class="btn number" data-number="6">6</button>
+                    <button class="btn operator" data-action="multiply">×</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="tanh">tanh</button>
+                    <button class="btn function" data-action="floor">⌊⌋</button>
+                    <button class="btn number" data-number="1">1</button>
+                    <button class="btn number" data-number="2">2</button>
+                    <button class="btn number" data-number="3">3</button>
+                    <button class="btn operator" data-action="subtract">−</button>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn function" data-action="ceil">⌈⌉</button>
+                    <button class="btn function" data-action="round">⌊⌉</button>
+                    <button class="btn number zero" data-number="0">0</button>
+                    <button class="btn number" data-action="decimal">.</button>
+					<button class="btn operator" data-action="add">+</button>
+                </div>
+				<div class="button-row">
+					<button class="btn equals" data-action="equals">=</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        class ExpressionParser {
+            constructor() {
+                this.angleMode = 'deg';
+            }
+
+            setAngleMode(mode) {
+                this.angleMode = mode;
+            }
+
+            parse(expr) {
+                try {
+                    // 预处理表达式
+                    let processedExpr = this.preprocess(expr);
+                    
+                    // 词法分析
+                    const tokens = this.tokenize(processedExpr);
+                    
+                    // 语法分析 - 使用递归下降解析器
+                    const ast = this.parseExpression(tokens);
+                    
+                    // 计算结果
+                    const result = this.evaluate(ast);
+                    
+                    return result;
+                } catch (error) {
+                    throw new Error('表达式解析错误: ' + error.message);
+                }
+            }
+
+            preprocess(expr) {
+                // 替换数学函数和常量
+                expr = expr.replace(/π/g, Math.PI);
+                expr = expr.replace(/e(?![a-z])/g, Math.E);
+                
+                return expr;
+            }
+
+            tokenize(expr) {
+                const tokens = [];
+                let current = 0;
+                
+                while (current < expr.length) {
+                    let char = expr[current];
+                    
+                    // 跳过空格
+                    if (/\s/.test(char)) {
+                        current++;
+                        continue;
+                    }
+                    
+                    // 数字
+                    if (/\d/.test(char) || char === '.') {
+                        let number = '';
+                        while ((/\d/.test(char) || char === '.') && current < expr.length) {
+                            number += char;
+                            current++;
+                            char = expr[current];
+                        }
+                        tokens.push({ type: 'number', value: parseFloat(number) });
+                        continue;
+                    }
+                    
+                    // 操作符
+                    if (/[+\-*/^%]/.test(char)) {
+                        tokens.push({ type: 'operator', value: char });
+                        current++;
+                        continue;
+                    }
+                    
+                    // 括号
+                    if (/[()]/.test(char)) {
+                        tokens.push({ type: char === '(' ? 'lparen' : 'rparen' });
+                        current++;
+                        continue;
+                    }
+                    
+                    // 函数
+                    if (/[a-z]/i.test(char)) {
+                        let func = '';
+                        while (/[a-z]/i.test(char) && current < expr.length) {
+                            func += char;
+                            current++;
+                            char = expr[current];
+                        }
+                        
+                        // 检查是否是函数
+                        if (current < expr.length && expr[current] === '(') {
+                            tokens.push({ type: 'function', value: func.toLowerCase() });
+                        } else {
+                            // 常数或变量
+                            tokens.push({ type: 'constant', value: func });
+                        }
+                        continue;
+                    }
+                    
+                    throw new Error(`无法识别的字符: ${char}`);
+                }
+                
+                return tokens;
+            }
+
+            parseExpression(tokens, precedence = 0) {
+                if (tokens.length === 0) {
+                    throw new Error('意外的表达式结束');
+                }
+                
+                let left = this.parsePrimary(tokens);
+                
+                while (tokens.length > 0) {
+                    const token = tokens[0];
+                    
+                    if (token.type !== 'operator') {
+                        break;
+                    }
+                    
+                    const newPrecedence = this.getPrecedence(token.value);
+                    
+                    if (newPrecedence <= precedence) {
+                        break;
+                    }
+                    
+                    tokens.shift();
+                    const right = this.parseExpression(tokens, newPrecedence);
+                    
+                    left = {
+                        type: 'binary',
+                        operator: token.value,
+                        left: left,
+                        right: right
+                    };
+                }
+                
+                return left;
+            }
+
+            parsePrimary(tokens) {
+                const token = tokens.shift();
+                
+                if (!token) {
+                    throw new Error('意外的表达式结束');
+                }
+                
+                // 数字
+                if (token.type === 'number') {
+                    return { type: 'number', value: token.value };
+                }
+                
+                // 常数
+                if (token.type === 'constant') {
+                    return { type: 'number', value: this.getConstant(token.value) };
+                }
+                
+                // 负号
+                if (token.type === 'operator' && token.value === '-') {
+                    return {
+                        type: 'unary',
+                        operator: '-',
+                        operand: this.parsePrimary(tokens)
+                    };
+                }
+                
+                // 正号
+                if (token.type === 'operator' && token.value === '+') {
+                    return this.parsePrimary(tokens);
+                }
+                
+                // 括号
+                if (token.type === 'lparen') {
+                    const expr = this.parseExpression(tokens);
+                    
+                    if (tokens.length === 0 || tokens[0].type !== 'rparen') {
+                        throw new Error('缺少右括号');
+                    }
+                    
+                    tokens.shift();
+                    return expr;
+                }
+                
+                // 函数
+                if (token.type === 'function') {
+                    if (tokens.length === 0 || tokens[0].type !== 'lparen') {
+                        throw new Error('函数参数需要括号');
+                    }
+                    
+                    tokens.shift();
+                    const args = [];
+                    
+                    if (tokens[0].type !== 'rparen') {
+                        args.push(this.parseExpression(tokens));
+                        
+                        while (tokens.length > 0 && tokens[0].type === 'operator' && tokens[0].value === ',') {
+                            tokens.shift();
+                            args.push(this.parseExpression(tokens));
+                        }
+                    }
+                    
+                    if (tokens.length === 0 || tokens[0].type !== 'rparen') {
+                        throw new Error('缺少右括号');
+                    }
+                    
+                    tokens.shift();
+                    
+                    return {
+                        type: 'function',
+                        name: token.value,
+                        args: args
+                    };
+                }
+                
+                throw new Error(`意外的标记: ${token.value}`);
+            }
+
+            getPrecedence(operator) {
+                const precedences = {
+                    '^': 4,
+                    '*': 3,
+                    '/': 3,
+                    '%': 3,
+                    '+': 2,
+                    '-': 2
+                };
+                
+                return precedences[operator] || 0;
+            }
+
+            getConstant(name) {
+                const constants = {
+                    'pi': Math.PI,
+                    'e': Math.E
+                };
+                
+                return constants[name.toLowerCase()] || 0;
+            }
+
+            evaluate(node) {
+                switch (node.type) {
+                    case 'number':
+                        return node.value;
+                    
+                    case 'binary':
+                        return this.evaluateBinary(node);
+                    
+                    case 'unary':
+                        return this.evaluateUnary(node);
+                    
+                    case 'function':
+                        return this.evaluateFunction(node);
+                    
+                    default:
+                        throw new Error(`未知的节点类型: ${node.type}`);
+                }
+            }
+
+            evaluateBinary(node) {
+                const left = this.evaluate(node.left);
+                const right = this.evaluate(node.right);
+                
+                switch (node.operator) {
+                    case '+': return left + right;
+                    case '-': return left - right;
+                    case '*': return left * right;
+                    case '/': 
+                        if (right === 0) throw new Error('不能除以零');
+                        return left / right;
+                    case '^': return Math.pow(left, right);
+                    case '%': return left % right;
+                    default:
+                        throw new Error(`未知的操作符: ${node.operator}`);
+                }
+            }
+
+            evaluateUnary(node) {
+                const operand = this.evaluate(node.operand);
+                
+                switch (node.operator) {
+                    case '-': return -operand;
+                    case '+': return operand;
+                    default:
+                        throw new Error(`未知的一元操作符: ${node.operator}`);
+                }
+            }
+
+            evaluateFunction(node) {
+                const args = node.args.map(arg => this.evaluate(arg));
+                
+                switch (node.name) {
+                    case 'sin':
+                        return this.angleMode === 'deg' 
+                            ? Math.sin(args[0] * Math.PI / 180)
+                            : Math.sin(args[0]);
+                    
+                    case 'cos':
+                        return this.angleMode === 'deg'
+                            ? Math.cos(args[0] * Math.PI / 180)
+                            : Math.cos(args[0]);
+                    
+                    case 'tan':
+                        return this.angleMode === 'deg'
+                            ? Math.tan(args[0] * Math.PI / 180)
+                            : Math.tan(args[0]);
+                    
+                    case 'sinh':
+                        return Math.sinh(args[0]);
+                    
+                    case 'cosh':
+                        return Math.cosh(args[0]);
+                    
+                    case 'tanh':
+                        return Math.tanh(args[0]);
+                    
+                    case 'asin':
+                        const asin = Math.asin(args[0]);
+                        return this.angleMode === 'deg' ? asin * 180 / Math.PI : asin;
+                    
+                    case 'acos':
+                        const acos = Math.acos(args[0]);
+                        return this.angleMode === 'deg' ? acos * 180 / Math.PI : acos;
+                    
+                    case 'atan':
+                        const atan = Math.atan(args[0]);
+                        return this.angleMode === 'deg' ? atan * 180 / Math.PI : atan;
+                    
+                    case 'ln':
+                        if (args[0] <= 0) throw new Error('ln的参数必须大于0');
+                        return Math.log(args[0]);
+                    
+                    case 'log':
+                        if (args[0] <= 0) throw new Error('log的参数必须大于0');
+                        return Math.log10(args[0]);
+                    
+                    case 'sqrt':
+                        if (args[0] < 0) throw new Error('sqrt的参数不能为负数');
+                        return Math.sqrt(args[0]);
+                    
+                    case 'cbrt':
+                        return Math.cbrt(args[0]);
+                    
+                    case 'abs':
+                        return Math.abs(args[0]);
+                    
+                    case 'exp':
+                        return Math.exp(args[0]);
+                    
+                    case 'floor':
+                        return Math.floor(args[0]);
+                    
+                    case 'ceil':
+                        return Math.ceil(args[0]);
+                    
+                    case 'round':
+                        return Math.round(args[0]);
+                    
+                    case 'factorial':
+                        return this.factorial(args[0]);
+                    
+                    default:
+                        throw new Error(`未知的函数: ${node.name}`);
+                }
+            }
+
+            factorial(n) {
+                if (n < 0) throw new Error('阶乘的参数不能为负数');
+                if (n !== Math.floor(n)) throw new Error('阶乘的参数必须为整数');
+                if (n > 170) throw new Error('阶乘的参数不能超过170');
+                
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            }
+        }
+
+        class ScientificCalculator {
+            constructor() {
+                this.display = document.getElementById('display');
+                this.expression = document.getElementById('expression');
+                this.memoryIndicator = document.querySelector('.memory-indicator');
+                this.tooltip = document.getElementById('tooltip');
+                
+                this.currentExpression = '';
+                this.memory = 0;
+                this.angleMode = 'deg';
+                this.parser = new ExpressionParser();
+                
+                this.init();
+            }
+
+            init() {
+                // Button events
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.createRipple(e, btn);
+                        this.handleButtonClick(btn);
+                    });
+                });
+
+                // Keyboard events
+                document.addEventListener('keydown', (e) => {
+                    this.handleKeyPress(e);
+                });
+
+                // Mode toggle
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.angleMode = btn.dataset.mode;
+                        this.parser.setAngleMode(this.angleMode);
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+            }
+
+            createRipple(e, btn) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+
+            handleButtonClick(btn) {
+                const action = btn.dataset.action;
+                const number = btn.dataset.number;
+
+                if (number !== undefined) {
+                    this.inputNumber(number);
+                } else if (action) {
+                    this.handleAction(action);
+                }
+            }
+
+            handleKeyPress(e) {
+                e.preventDefault();
+                
+                if (e.key >= '0' && e.key <= '9') {
+                    this.inputNumber(e.key);
+                } else if (e.key === '.') {
+                    this.inputDecimal();
+                } else if (e.key === 'Enter' || e.key === '=') {
+                    this.calculate();
+                } else if (e.key === 'Escape') {
+                    this.clear();
+                } else if (e.key === 'Backspace') {
+                    this.backspace();
+                } else if (e.key === '+') {
+                    this.inputOperator('+');
+                } else if (e.key === '-') {
+                    this.inputOperator('-');
+                } else if (e.key === '*') {
+                    this.inputOperator('*');
+                } else if (e.key === '/') {
+                    this.inputOperator('/');
+                } else if (e.key === '(') {
+                    this.inputNumber('(');
+                } else if (e.key === ')') {
+                    this.inputNumber(')');
+                }
+            }
+
+            handleAction(action) {
+                switch(action) {
+                    case 'clear':
+                    case 'c':
+                        this.clear();
+                        break;
+                    case 'ce':
+                        this.clearEntry();
+                        break;
+                    case 'backspace':
+                        this.backspace();
+                        break;
+                    case 'equals':
+                        this.calculate();
+                        break;
+                    case 'add':
+                        this.inputOperator('+');
+                        break;
+                    case 'subtract':
+                        this.inputOperator('-');
+                        break;
+                    case 'multiply':
+                        this.inputOperator('*');
+                        break;
+                    case 'divide':
+                        this.inputOperator('/');
+                        break;
+                    case 'decimal':
+                        this.inputDecimal();
+                        break;
+                    case 'negate':
+                        this.negate();
+                        break;
+                    case 'percent':
+                        this.percent();
+                        break;
+                    case 'square':
+                        this.applyFunction('square');
+                        break;
+                    case 'cube':
+                        this.applyFunction('cube');
+                        break;
+                    case 'power':
+                        this.inputOperator('^');
+                        break;
+                    case 'root':
+                        this.applyFunction('sqrt');
+                        break;
+                    case 'cuberoot':
+                        this.applyFunction('cbrt');
+                        break;
+                    case 'reciprocal':
+                        this.reciprocal();
+                        break;
+                    case 'pi':
+                        this.inputConstant('π');
+                        break;
+                    case 'e':
+                        this.inputConstant('e');
+                        break;
+                    case 'sin':
+                    case 'cos':
+                    case 'tan':
+                    case 'sinh':
+                    case 'cosh':
+                    case 'tanh':
+                        this.applyFunction(action);
+                        break;
+                    case 'ln':
+                        this.applyFunction('ln');
+                        break;
+                    case 'log':
+                        this.applyFunction('log');
+                        break;
+                    case 'factorial':
+                        this.applyFunction('factorial');
+                        break;
+                    case 'lparen':
+                        this.inputNumber('(');
+                        break;
+                    case 'rparen':
+                        this.inputNumber(')');
+                        break;
+                    case 'floor':
+                        this.applyFunction('floor');
+                        break;
+                    case 'ceil':
+                        this.applyFunction('ceil');
+                        break;
+                    case 'round':
+                        this.applyFunction('round');
+                        break;
+                    case 'mc':
+                        this.memoryClear();
+                        break;
+                    case 'mr':
+                        this.memoryRecall();
+                        break;
+                    case 'mplus':
+                        this.memoryAdd();
+                        break;
+                    case 'mminus':
+                        this.memorySubtract();
+                        break;
+                    case 'ms':
+                        this.memoryStore();
+                        break;
+                }
+            }
+
+            inputNumber(num) {
+                if (this.currentExpression === '0') {
+                    this.currentExpression = num;
+                } else {
+                    this.currentExpression += num;
+                }
+                this.updateDisplay();
+            }
+
+            inputOperator(op) {
+                this.currentExpression += op;
+                this.updateDisplay();
+            }
+
+            inputDecimal() {
+                const parts = this.currentExpression.split(/[\+\-\*\/\^\%\(\)]/);
+                const lastPart = parts[parts.length - 1];
+                
+                if (!lastPart.includes('.')) {
+                    this.currentExpression += '.';
+                }
+                this.updateDisplay();
+            }
+
+            inputConstant(constant) {
+                if (this.currentExpression === '0') {
+                    this.currentExpression = constant;
+                } else {
+                    this.currentExpression += constant;
+                }
+                this.updateDisplay();
+            }
+
+            applyFunction(func) {
+                if (this.currentExpression === '0') {
+                    this.currentExpression = func + '(';
+                } else {
+                    this.currentExpression = func + '(' + this.currentExpression + ')';
+                }
+                this.updateDisplay();
+            }
+
+            negate() {
+                this.currentExpression = '-(' + this.currentExpression + ')';
+                this.updateDisplay();
+            }
+
+            percent() {
+                this.currentExpression = '(' + this.currentExpression + ')/100';
+                this.updateDisplay();
+            }
+
+            reciprocal() {
+                this.currentExpression = '1/(' + this.currentExpression + ')';
+                this.updateDisplay();
+            }
+
+            clear() {
+                this.currentExpression = '0';
+                this.expression.textContent = '';
+                this.updateDisplay();
+            }
+
+            clearEntry() {
+                this.currentExpression = '0';
+                this.updateDisplay();
+            }
+
+            backspace() {
+                if (this.currentExpression.length > 1) {
+                    this.currentExpression = this.currentExpression.slice(0, -1);
+                } else {
+                    this.currentExpression = '0';
+                }
+                this.updateDisplay();
+            }
+
+            calculate() {
+                try {
+                    const result = this.parser.parse(this.currentExpression);
+                    this.expression.textContent = this.currentExpression + ' =';
+                    this.currentExpression = this.formatResult(result);
+                    this.updateDisplay();
+                } catch (error) {
+                    this.showError(error.message);
+                }
+            }
+
+            formatResult(num) {
+                if (isNaN(num)) return 'NaN';
+                if (!isFinite(num)) return num > 0 ? '∞' : '-∞';
+                
+                // 如果是整数
+                if (Math.floor(num) === num) {
+                    return num.toString();
+                }
+                
+                // 如果数字太大或太小，使用科学计数法
+                if (Math.abs(num) > 1e10 || Math.abs(num) < 1e-10) {
+                    return num.toExponential(6);
+                }
+                
+                // 否则保留适当的小数位数
+                return parseFloat(num.toPrecision(10)).toString();
+            }
+
+            memoryClear() {
+                this.memory = 0;
+                this.updateMemoryIndicator();
+            }
+
+            memoryRecall() {
+                if (this.currentExpression === '0') {
+                    this.currentExpression = this.memory.toString();
+                } else {
+                    this.currentExpression += this.memory.toString();
+                }
+                this.updateDisplay();
+            }
+
+            memoryAdd() {
+                try {
+                    const result = this.parser.parse(this.currentExpression);
+                    this.memory += result;
+                    this.updateMemoryIndicator();
+                } catch (error) {
+                    this.showError(error.message);
+                }
+            }
+
+            memorySubtract() {
+                try {
+                    const result = this.parser.parse(this.currentExpression);
+                    this.memory -= result;
+                    this.updateMemoryIndicator();
+                } catch (error) {
+                    this.showError(error.message);
+                }
+            }
+
+            memoryStore() {
+                try {
+                    const result = this.parser.parse(this.currentExpression);
+                    this.memory = result;
+                    this.updateMemoryIndicator();
+                } catch (error) {
+                    this.showError(error.message);
+                }
+            }
+
+            updateMemoryIndicator() {
+                this.memoryIndicator.classList.toggle('active', this.memory !== 0);
+            }
+
+            showError(message) {
+                this.currentExpression = '错误';
+                this.expression.textContent = message;
+                this.updateDisplay();
+                setTimeout(() => {
+                    this.clear();
+                }, 3000);
+            }
+
+            updateDisplay() {
+                this.display.value = this.currentExpression;
+            }
+        }
+
+        // 初始化计算器
+        const calculator = new ScientificCalculator();
+        
+    </script>
+</body>
+</html>
